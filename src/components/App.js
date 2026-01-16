@@ -7,6 +7,7 @@ import StartScreen from "./StartScreen";
 import Question from "./Question";
 import NextButton from "./NextButton";
 import Progress from "./Progress";
+import Finished from "./Finished";
 const initialState = {
   questions: [],
 
@@ -46,6 +47,14 @@ function reducer(state, action) {
         answers: null,
       };
     }
+    case "finish": {
+      return {
+        ...state,
+        status: "finished",
+        highScore:
+          state.points > state.highScore ? state.points : state.highScore,
+      };
+    }
     default: {
       throw new Error("Unsupported action type: " + action.type);
     }
@@ -53,10 +62,8 @@ function reducer(state, action) {
 }
 
 export default function App() {
-  const [{ questions, status, index, answers, points }, dispatch] = useReducer(
-    reducer,
-    initialState
-  );
+  const [{ questions, status, index, answers, points, highScore }, dispatch] =
+    useReducer(reducer, initialState);
   const totalQuestions = questions.length;
   const maxPoints = questions.reduce(
     (acc, question) => acc + question.points,
@@ -86,14 +93,27 @@ export default function App() {
               index={index}
               points={points}
               maxPoints={maxPoints}
+              answers={answers}
             />
             <Question
               question={questions[index]}
               dispatch={dispatch}
               answers={answers}
             />
-            <NextButton dispatch={dispatch} answers={answers} />
+            <NextButton
+              dispatch={dispatch}
+              answers={answers}
+              index={index}
+              numQuestions={totalQuestions}
+            />
           </>
+        )}
+        {status === "finished" && (
+          <Finished
+            points={points}
+            maxPoints={maxPoints}
+            highScore={highScore}
+          />
         )}
       </Main>
     </div>
